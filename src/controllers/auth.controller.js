@@ -53,7 +53,7 @@ const activation = async (req, res) => {
   const user = await User.findOne({ where: { activationToken } });
 
   if (!user) {
-    res.status(404).send('invalind activation token');
+    return res.status(404).send('invalind activation token');
   }
 
   user.isActivated = true;
@@ -68,13 +68,13 @@ const login = async (req, res) => {
   const existUser = await User.findOne({ where: { email } });
 
   if (!existUser) {
-    res.send('User not found');
+    return res.send('User not found');
   }
 
   const isValid = await bcrypt.compare(password, existUser.password);
 
   if (!isValid) {
-    res.send('Invalid credentials');
+    return res.send('Invalid credentials');
   }
 
   if (!existUser.isActivated) {

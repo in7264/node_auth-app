@@ -19,9 +19,15 @@ async function start() {
     const app = express(); // create express app
 
     app.use(cookieParser());
-    app.use(express.json()); // allow json in body
+    app.use(express.json());
+
     app.use(authRouter);
     app.use(userRouter);
+
+    // 404 handler
+    app.use((req, res) => {
+      res.status(404).send('Page not found');
+    });
 
     app.listen(3000, () => console.log('server running on 3000 port')); // start server
   } catch (err) {

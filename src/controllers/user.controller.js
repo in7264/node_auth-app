@@ -34,8 +34,8 @@ const changePassword = async (req, res) => {
   const userId = req.user.id;
   const { password, newPassword, confirm } = req.body;
 
-  if (!confirm) {
-    res.send('You need confirm change');
+  if (newPassword !== confirm) {
+    return res.send('Passwords do not match');
   }
 
   const user = await User.findByPk(userId);
@@ -43,7 +43,7 @@ const changePassword = async (req, res) => {
   const isValid = await bcrypt.compare(password, user.password);
 
   if (!isValid) {
-    res.status(401).send('Invalid credentials');
+    return res.status(401).send('Invalid credentials');
   }
 
   user.password = await bcrypt.hash(newPassword, 10);
@@ -85,27 +85,36 @@ const resetPasswordConfirm = async (req, res) => {
   }
 
   if (password !== repeatPassword) {
-    res.send('passwords not equil');
+    return res.send('passwords not equil');
   }
 
   const user = await User.findOne({ where: { resetToken } });
 
+  if (!user) {
+    return res.status(401).send('Invalid credentials');
+  }
+
   user.password = await bcrypt.hash(password, 10);
   user.resetToken = null;
-  user.save();
-  res.send('password changed');
+  await user.save();
+
+  return res.redirect('/login');
 };
 
 const changeEmail = async (req, res) => {
   const userId = req.user.id;
-  const { password, email } = req.body;
+  const { password, email, confirmEmail } = req.body;
 
   const user = await User.findByPk(userId);
 
   const isValid = await bcrypt.compare(password, user.password);
 
   if (!isValid) {
-    res.status(401).send('Invalid credentials');
+    return res.status(401).send('Invalid credentials');
+  }
+
+  if (email !== confirmEmail) {
+    return res.status(400).send('Emails do not match');
   }
 
   const errorEmail = validateEmail(email);
@@ -118,15 +127,23 @@ const changeEmail = async (req, res) => {
 
   await send(
     user.email,
-    'Activate email',
-    `go to link http://localhost:3000/activation/${uuid}`,
+    'Email change notification',
+    'Your email is being changed.',
+  );
+
+  await send(
+    email,
+    'Activate new email',
+    `Go to link http://localhost:3000/activation/${uuid}`,
   );
 
   user.email = email;
   user.isActivated = false;
   user.activationToken = uuid;
+
   await user.save();
-  res.redirect('http://localhost:3000/login');
+
+  return res.redirect('/login');
 };
 
 const logout = async (req, res) => {
