@@ -13,7 +13,7 @@ async function start() {
     await sequelize.authenticate(); // connect to database
     console.log('database connected');
 
-    await sequelize.sync({ force: true }); // create tables
+    await sequelize.sync({ alter: true }); // create tables
     console.log('tables created');
 
     const app = express(); // create express app

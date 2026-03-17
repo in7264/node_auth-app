@@ -44,7 +44,7 @@ const registration = async (req, res) => {
     'Activate email',
     `go to link http://localhost:3000/activation/${uuid}`,
   );
-  res.send(201);
+  res.status(201).send('User created');
 };
 
 const activation = async (req, res) => {
@@ -53,7 +53,7 @@ const activation = async (req, res) => {
   const user = await User.findOne({ where: { activationToken } });
 
   if (!user) {
-    return res.status(404).send('invalind activation token');
+    return res.status(404).send('Invalid activation token');
   }
 
   user.isActivated = true;
@@ -68,13 +68,13 @@ const login = async (req, res) => {
   const existUser = await User.findOne({ where: { email } });
 
   if (!existUser) {
-    return res.send('User not found');
+    return res.status(404).send('User not found');
   }
 
   const isValid = await bcrypt.compare(password, existUser.password);
 
   if (!isValid) {
-    return res.send('Invalid credentials');
+    return res.status(401).send('Invalid credentials');
   }
 
   if (!existUser.isActivated) {

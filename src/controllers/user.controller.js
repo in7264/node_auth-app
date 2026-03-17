@@ -98,7 +98,10 @@ const resetPasswordConfirm = async (req, res) => {
   user.resetToken = null;
   await user.save();
 
-  return res.redirect('/login');
+  return res.send(`
+  <h1>Password changed successfully</h1>
+  <a href="/login">Go to login</a>
+`);
 };
 
 const changeEmail = async (req, res) => {
